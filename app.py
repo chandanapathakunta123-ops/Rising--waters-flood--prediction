@@ -11,7 +11,7 @@ st.write("Enter details to check flood risk")
 # Load dataset
 @st.cache_data
 def load_data():
-    df = pd.read_excel("dataset/flood dataset.xlsx")
+    df = pd.read_excel("flood_dataset.xlsx")
     return df
 
 df = load_data()
