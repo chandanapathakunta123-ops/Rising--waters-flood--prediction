@@ -1,28 +1,39 @@
-from flask import Flask, render_template, request
+import streamlit as st
+import pandas as pd
 import joblib
 import numpy as np
 
-app = Flask(__name__)
-model = joblib.load('flood_model.pkl')
+st.set_page_config(page_title="🌊 Flood Risk Prediction", layout="centered")
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+st.title("🌊 Rising Waters - Flood Risk Prediction")
+st.write("Enter details to check flood risk")
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    data = [float(x) for x in request.form.values()]
-    prediction = model.predict([np.array(data)])
-    result = "Flood Risk: HIGH" if prediction[0] == 1 else "Flood Risk: LOW"
-    return render_template('predict.html', prediction_text=result)
+# Load dataset
+@st.cache_data
+def load_data():
+    df = pd.read_excel("dataset/flood dataset.xlsx")
+    return df
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
+df = load_data()
 
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
+st.subheader("Dataset Preview")
+st.dataframe(df.head())
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Load model
+model = joblib.load("flood_model.pkl")
+
+st.subheader("Make a Prediction")
+
+# Input fields - nee dataset columns batti marchu
+monsoon = st.number_input("MonsoonIntensity", min_value=0.0)
+topography = st.number_input("Topography", min_value=0.0)
+river = st.number_input("RiverManagement", min_value=0.0)
+
+if st.button("Predict"):
+    input_data = np.array([[monsoon, topography, river]])
+    prediction = model.predict(input_data)
+    
+    if prediction[0] == 1:
+        st.error("🚨 Flood Risk: HIGH")
+    else:
+        st.success("✅ Flood Risk: LOW")
